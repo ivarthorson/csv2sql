@@ -126,19 +126,22 @@
         all-parsers (into {} *sql-types-and-parsers*)
         row-parsers (mapv #(get all-parsers %) types)
         typed-rows (for [raw-row raw-rows]
-                     (map (fn [parse-fn element]
-                            (when (and parse-fn (not (empty? element)))
-                              (try (parse-fn element)
-                                   (catch Exception e
-                                     (println "Schema:" schema)
-                                     (println "Header:" header)
-                                     (println "Raw row:" raw-row)
-                                     (throw e)))))
-                          row-parsers
-                          raw-row))
+                     (remove nil? (map (fn [parse-fn element]
+                                         (when (and parse-fn (not (empty? element)))
+                                           (try (parse-fn element)
+                                                (catch Exception e
+                                                  (println "Schema:" schema)
+                                                  (println "Header:" header)
+                                                  (println "Raw row:" raw-row)
+                                                  (throw e)))))
+                                       row-parsers
+                                       raw-row)))
         cnt (atom 0)
-        chunk-size 1000]
-    [header typed-rows]))
+        chunk-size 1000
+        header-with-no-nils (->> (map vector row-parsers header)
+                                 (remove #(nil? (first %)))
+                                 (mapv second))]
+    [header-with-no-nils typed-rows]))
 
 (defn table-definition-sql-string
   "Returns a string suitable for creating a SQL table named TABLE-NAME, given
