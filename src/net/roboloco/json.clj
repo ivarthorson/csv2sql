@@ -27,7 +27,7 @@
         (let [[k v] kv]
           (if (map? v)
             (recur (rest h)
-                   (merge ret (flatten-and-concat-keys v (conj prefix k))))
+                   (merge ret (flatten-keys v (conj prefix k))))
             (recur (rest h)
                    (assoc ret (if (empty? prefix)
                                 k
