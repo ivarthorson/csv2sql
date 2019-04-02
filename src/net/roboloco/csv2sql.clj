@@ -31,9 +31,12 @@
     (doseq [jsonfile (files/list-files-of-type dir "json")]
       (let [csvfile ^java.io.File (matching-csv-for-json jsonfile)]
         (when-not (.isFile csvfile)
-          (-> (.getAbsolutePath ^java.io.File jsonfile)
-              (json/load-json-as-csv)
-              (csv/save-csv csvfile)))))))
+          (let [filepath (.getAbsolutePath ^java.io.File jsonfile)]
+            (try (-> filepath
+                     (json/load-json-as-csv)
+                     (csv/save-csv csvfile))
+                 (catch Exception e 
+                   (println "ERROR LOADING: " filepath)))))))))
 
 (defn autodetect-sql-schemas!
   "Scans through the subdirectories of CSVDIR, infers the column data types,
@@ -78,7 +81,6 @@
     (let [table-sql (slurp sql-file)]
       (println table-sql)
       (sql/db-do-commands db table-sql))))
-
 
 (defn insert-csv!
   "Inserts the rows of the CSV into the database, converting the rows to the appropriate
