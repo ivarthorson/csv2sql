@@ -125,17 +125,28 @@
         raw-rows (map #(map empty-string-to-nil %) (rest csv-rows))
         all-parsers (into {} *sql-types-and-parsers*)
         row-parsers (mapv #(get all-parsers %) types)
-        typed-rows (for [raw-row raw-rows]
-                     (remove nil? (map (fn [parse-fn element]
-                                         (when (and parse-fn (not (empty? element)))
-                                           (try (parse-fn element)
-                                                (catch Exception e
-                                                  (println "Schema:" schema)
-                                                  (println "Header:" header)
-                                                  (println "Raw row:" raw-row)
-                                                  (throw e)))))
-                                       row-parsers
-                                       raw-row)))
+        process-row (fn [raw-row]
+                      (loop [raw-row raw-row
+                             parsers row-parsers
+                             row []]
+                        (if-not (empty? parsers)
+                          (let [parse-fn (first parsers)
+                                element (first raw-row)] 
+                            (if parse-fn
+                              (recur (next raw-row)
+                                     (next parsers)
+                                     (conj row (when-not (empty? element)
+                                                 (try (parse-fn element)
+                                                      (catch Exception e
+                                                        (println "Schema:" schema)
+                                                        (println "Header:" header)
+                                                        (println "Raw row:" raw-row)
+                                                        (throw e))))))
+                              (recur (next raw-row) ;; Skip null parse-fns
+                                     (next parsers)
+                                     row)))
+                          row)))
+        typed-rows (map process-row raw-rows)
         cnt (atom 0)
         chunk-size 1000
         header-with-no-nils (->> (map vector row-parsers header)

@@ -94,7 +94,8 @@
           chunk-size 1000]
       (doseq [chunk-of-rows (partition-all chunk-size typed-rows)]
         (let [line-num (swap! cnt inc)]
-          (println "Inserted"  (* chunk-size (inc @cnt)) "rows"))
+          (print ".")
+          (flush))
         (sql/insert-multi! db table header chunk-of-rows)))))
 
 (defn insert-all-csvs!
@@ -118,10 +119,9 @@
       (throw (Exception. "Please specify a valid CSVDIR environment variable.")))
     (when-not (connection-ok? db)
       (throw (Exception. (str "Unable to connect to DB:" db))))
+    (drop-existing-sql-tables! db csvdir)
     (convert-jsons-to-csvs! csvdir)
     (autodetect-sql-schemas! csvdir)
     (make-sql-tables! db csvdir)
     (insert-all-csvs! db csvdir)
     (println "Done!")))
-
-
