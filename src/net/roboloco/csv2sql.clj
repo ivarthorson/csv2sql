@@ -108,7 +108,7 @@
           schema (edn/read-string (slurp (table-schema-file dir)))]
       (when-not (empty? schema)
         (doseq [csvfile (files/list-files-of-type dir "csv")]
-          (println (format "Loading: %s" csvfile))
+          (print (format "\nLoading: %s " csvfile))
           (insert-csv! db tablename csvfile schema))))))
 
 (defn -main

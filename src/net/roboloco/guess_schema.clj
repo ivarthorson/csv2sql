@@ -116,11 +116,17 @@
                   (throw (Exception. (str "Inconsistent types across files for column: " 
                                            col (vec types))))))))))
 
+(defn drop-trailing-null
+  [s]
+  (if (= " NULL" (apply str (take-last 5 s)))
+    (apply str (drop-last 5 s))
+    s))
+
 (defn parse-csv-rows-using-schema
   "Lazily parse CSV-ROWS using the schema."
   [schema csv-rows]
   (let [header (clean-column-names (first csv-rows))
-        types  (map #(get schema %) header)
+        types  (map #(drop-trailing-null (get schema %)) header)
         empty-string-to-nil (fn [s] (if (and (string? s) (empty? s)) nil s))
         raw-rows (map #(map empty-string-to-nil %) (rest csv-rows))
         all-parsers (into {} *sql-types-and-parsers*)
