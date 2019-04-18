@@ -8,6 +8,7 @@
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/java.jdbc "0.7.9"]
                  [org.postgresql/postgresql "42.2.5"]
+                 [org.xerial/sqlite-jdbc "3.7.2"]
                  [clojure.java-time "0.3.2"]]
   :repl-options {:init-ns net.roboloco.csv2sql}
   :main net.roboloco.csv2sql
