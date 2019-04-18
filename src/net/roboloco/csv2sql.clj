@@ -58,7 +58,7 @@
   (if (System/getenv "USE_SQLITE")
     {:classname   "org.sqlite.JDBC"
      :subprotocol "sqlite"
-     :subname     (or (System/gecenv "SQLITE_DB_PATH") "sqlite-database.db")}
+     :subname     (or (System/getenv "SQLITE_DB_PATH") "sqlite-database.db")}
     {:dbtype "postgresql" 
      :dbname   (or (System/getenv "POSTGERS_DB")  "csv2sql")
      :user     (or (System/getenv "POSTGRES_USER") "postgres")
